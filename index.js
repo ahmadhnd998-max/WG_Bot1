@@ -77,7 +77,7 @@ async function sleepOff() {
 // =======================
 
 // 07:30 test ON
-cron.schedule('30 7 * * *', async () => {
+cron.schedule('35 7 * * *', async () => {
     console.log('TEST ON');
     await sleepOn();
 }, {
@@ -85,7 +85,7 @@ cron.schedule('30 7 * * *', async () => {
 });
 
 // 07:35 test OFF
-cron.schedule('35 7 * * *', async () => {
+cron.schedule('40 7 * * *', async () => {
     console.log('TEST OFF');
     await sleepOff();
 }, {
