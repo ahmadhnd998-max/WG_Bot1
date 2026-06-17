@@ -80,7 +80,7 @@ async function sleepOff() {
 }
 
 
-// 💬 MAIN
+// 💬 MAIN SYSTEM
 client.on('messageCreate', async message => {
 
     if (message.author.bot) return;
@@ -102,10 +102,10 @@ client.on('messageCreate', async message => {
         return message.channel.send("☀️ تم إيقاف الوضع الليلي");
     }
 
-    // 📤 SEND COMMAND
+    // 📤 SEND SYSTEM
     if (cmd === '-send') {
 
-        // ❌ DELETE COMMAND MESSAGE
+        // ❌ DELETE COMMAND
         await message.delete().catch(() => {});
 
         const panel = new EmbedBuilder()
@@ -139,14 +139,11 @@ client.on('messageCreate', async message => {
 
             // ❌ CANCEL
             if (i.customId === 'cancel_msg') {
-                return i.update({
-                    content: "❌ تم الإلغاء",
-                    embeds: [],
-                    components: []
-                });
+                await panelMsg.delete().catch(() => {});
+                return;
             }
 
-            // 📤 START FLOW
+            // 📤 START
             if (i.customId === 'send_msg') {
 
                 await i.update({
@@ -165,10 +162,12 @@ client.on('messageCreate', async message => {
 
                     const content = m1.content;
 
-                    // ❌ DELETE USER MESSAGE (message text)
+                    // ❌ DELETE MESSAGE
                     await m1.delete().catch(() => {});
 
-                    // 📍 ASK CHANNEL
+                    // ❌ DELETE PANEL
+                    await panelMsg.delete().catch(() => {});
+
                     const prompt = await message.channel.send("📍 أرسل ID القناة أو منشن القناة:");
 
                     const channelCollector = message.channel.createMessageCollector({
@@ -182,14 +181,11 @@ client.on('messageCreate', async message => {
                         const channelId = m2.content.replace(/[<#>]/g, '');
                         const channel = await client.channels.fetch(channelId).catch(() => null);
 
-                        // ❌ DELETE USER ANSWER
+                        // ❌ DELETE INPUT
                         await m2.delete().catch(() => {});
 
-                        // ❌ DELETE BOT PROMPT
+                        // ❌ DELETE PROMPT
                         await prompt.delete().catch(() => {});
-
-                        // ❌ DELETE PANEL
-                        await panelMsg.delete().catch(() => {});
 
                         if (!channel) {
                             return message.channel.send("❌ قناة غير صالحة");
