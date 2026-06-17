@@ -77,19 +77,20 @@ async function sleepOff() {
 // =======================
 
 // 07:30 test ON
-cron.schedule('35 7 * * *', async () => {
+// TEST ON (20:40 Amman time)
+cron.schedule('40 20 * * *', async () => {
     console.log('TEST ON');
     await sleepOn();
 }, {
-    timezone: 'Europe/Amsterdam'
+    timezone: 'Asia/Amman'
 });
 
-// 07:35 test OFF
-cron.schedule('40 7 * * *', async () => {
+// TEST OFF (20:42 Amman time)
+cron.schedule('42 20 * * *', async () => {
     console.log('TEST OFF');
     await sleepOff();
 }, {
-    timezone: 'Europe/Amsterdam'
+    timezone: 'Asia/Amman'
 });
 
 // =======================
