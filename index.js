@@ -1,224 +1,221 @@
 require('dotenv').config();
 
 const express = require('express');
-const app = express();
+const cron = require('node-cron');
+const {
+Client,
+GatewayIntentBits,
+ActivityType
+} = require('discord.js');
 
+const app = express();
 const PORT = process.env.PORT || 3000;
 
+// =======================
+// WEB SERVER
+// =======================
 app.get('/', (req, res) => {
-    res.send('Bot is running');
+res.send('Bot is running');
 });
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+console.log(`Server running on port ${PORT}`);
 });
 
-const {
-    Client,
-    GatewayIntentBits,
-    ActivityType,
-    ActionRowBuilder,
-    ButtonBuilder,
-    ButtonStyle,
-    EmbedBuilder
-} = require('discord.js');
-
+// =======================
+// DISCORD CLIENT
+// =======================
 const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
+intents: [
+GatewayIntentBits.Guilds,
+GatewayIntentBits.GuildMessages,
+GatewayIntentBits.MessageContent
+]
+});
+
+// =======================
+// CHANNEL IDS
+// =======================
+const CHANNELS = [
+'1513464359999897721',
+'1354726620354838568',
+'1354726922470559765',
+'1354727010567589978',
+'1354727740515024927',
+'1354727842667167867'
+];
+
+// =======================
+// SLEEP MODE STATE
+// =======================
+let sleepModeEnabled = false;
+
+// =======================
+// SLEEP MODE ON
+// =======================
+async function sleepOn() {
+
+```
+sleepModeEnabled = true;
+
+console.log('Starting Sleep Mode...');
+
+for (const channelId of CHANNELS) {
+
+    try {
+
+        const channel = await client.channels.fetch(channelId).catch(() => null);
+
+        if (!channel) continue;
+
+        await channel.permissionOverwrites.edit(
+            channel.guild.roles.everyone,
+            {
+                AttachFiles: false
+            }
+        );
+
+        await channel.send(
+```
+
+`🌒 تم بدء الوضع الليلي
+
+❌ من هذا الوقت حتى الساعة 10 لن يكون أي عضو قادرًا على إرسال الوسائط (صور، فيديو، ملفات...) و الروابط في المجموعة وسيتم حذف المشاركات تلقائيًا من قبل البوت.
+
+⚠️ الوقت بنظام 24 ساعة وليس 12 ساعة`
+);
+
+```
+    } catch (error) {
+
+        console.error(`Sleep ON Error (${channelId})`, error);
+
+    }
+}
+
+console.log('Sleep Mode Enabled');
+```
+
+}
+
+// =======================
+// SLEEP MODE OFF
+// =======================
+async function sleepOff() {
+
+```
+sleepModeEnabled = false;
+
+console.log('Stopping Sleep Mode...');
+
+for (const channelId of CHANNELS) {
+
+    try {
+
+        const channel = await client.channels.fetch(channelId).catch(() => null);
+
+        if (!channel) continue;
+
+        await channel.permissionOverwrites.edit(
+            channel.guild.roles.everyone,
+            {
+                AttachFiles: true
+            }
+        );
+
+        await channel.send(
+```
+
+`🌒 تم انتهاء وقت الوضع الليلي
+
+✅ من الآن فصاعدًا يستطيع الأعضاء إرسال الوسائط (صور، فيديو، ملفات...) و الروابط في المجموعة من جديد.`
+);
+
+```
+    } catch (error) {
+
+        console.error(`Sleep OFF Error (${channelId})`, error);
+
+    }
+}
+
+console.log('Sleep Mode Disabled');
+```
+
+}
+
+// =======================
+// DELETE LINKS & FILES
+// DURING SLEEP MODE
+// =======================
+client.on('messageCreate', async (message) => {
+
+```
+if (message.author.bot) return;
+
+if (!sleepModeEnabled) return;
+
+if (!CHANNELS.includes(message.channel.id)) return;
+
+const hasAttachment = message.attachments.size > 0;
+
+const hasLink =
+    /(https?:\/\/[^\s]+)/i.test(message.content) ||
+    /(discord\.gg\/[^\s]+)/i.test(message.content);
+
+if (hasAttachment || hasLink) {
+    await message.delete().catch(() => {});
+}
+```
+
+});
+
+// =======================
+// BOT READY
+// =======================
+client.once('ready', () => {
+
+```
+console.log(`Logged in as ${client.user.tag}`);
+
+client.user.setPresence({
+    status: 'idle',
+    activities: [
+        {
+            name: 'WG_System',
+            type: ActivityType.Watching
+        }
     ]
 });
 
-
-// 📌 CHANNELS
-const CHANNELS = [
-    '1513464359999897721',
-    '1354726620354838568',
-    '1354726922470559765',
-    '1354727010567589978',
-    '1354727740515024927',
-    '1354727842667167867'
-];
-
-
-// 👑 ADMINS
-const ADMIN_IDS = [
-    "1516018598383190109",
-    "562600119447453706"
-];
-
-function isAdmin(id) {
-    return ADMIN_IDS.includes(id);
-}
-
-
-// 🌙 SLEEP ON
-async function sleepOn() {
-    for (const id of CHANNELS) {
-        const channel = await client.channels.fetch(id).catch(() => null);
-        if (!channel) continue;
-
-        await channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
-            AttachFiles: false
-        });
-    }
-}
-
-
-// ☀️ SLEEP OFF
-async function sleepOff() {
-    for (const id of CHANNELS) {
-        const channel = await client.channels.fetch(id).catch(() => null);
-        if (!channel) continue;
-
-        await channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
-            AttachFiles: true
-        });
-    }
-}
-
-
-// 💬 MAIN SYSTEM
-client.on('messageCreate', async message => {
-
-    if (message.author.bot) return;
-    if (!isAdmin(message.author.id)) return;
-
-    const cmd = message.content.toLowerCase();
-
-    // 🌙 ON
-    if (cmd === '!sleep mode on') {
+// Sleep Mode ON - 22:00 Netherlands Time
+cron.schedule(
+    '0 22 * * *',
+    async () => {
         await sleepOn();
-        await message.delete().catch(() => {});
-        return message.channel.send("🌙 تم تشغيل الوضع الليلي لا يمكنك الان ارسال ملفات , فيدوهات , صور");
+    },
+    {
+        timezone: 'Europe/Amsterdam'
     }
+);
 
-    // ☀️ OFF
-    if (cmd === '!sleep mode off') {
+// Sleep Mode OFF - 10:00 Netherlands Time
+cron.schedule(
+    '0 10 * * *',
+    async () => {
         await sleepOff();
-        await message.delete().catch(() => {});
-        return message.channel.send("☀️ تم إيقاف الوضع الليلي يمكنك الان ارسال ملفات , فيدوهات , صور");
+    },
+    {
+        timezone: 'Europe/Amsterdam'
     }
+);
 
-    // 📤 SEND SYSTEM
-    if (cmd === '-send') {
+console.log('Automatic Sleep Mode Scheduler Started');
+```
 
-        // ❌ DELETE COMMAND
-        await message.delete().catch(() => {});
-
-        const panel = new EmbedBuilder()
-            .setTitle("🧠 لوحة التحكم")
-            .setDescription("اضغط بدء الإرسال")
-            .setColor(0x00AEFF);
-
-        const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setCustomId('send_msg')
-                .setLabel('بدء الإرسال')
-                .setStyle(ButtonStyle.Success),
-
-            new ButtonBuilder()
-                .setCustomId('cancel_msg')
-                .setLabel('إلغاء')
-                .setStyle(ButtonStyle.Danger)
-        );
-
-        const panelMsg = await message.channel.send({
-            embeds: [panel],
-            components: [row]
-        });
-
-        const collector = panelMsg.createMessageComponentCollector({
-            filter: i => isAdmin(i.user.id),
-            time: 60000
-        });
-
-        collector.on('collect', async (i) => {
-
-            // ❌ CANCEL
-            if (i.customId === 'cancel_msg') {
-                await panelMsg.delete().catch(() => {});
-                return;
-            }
-
-            // 📤 START
-            if (i.customId === 'send_msg') {
-
-                await i.update({
-                    content: "✍️ اكتب الرسالة الآن:",
-                    embeds: [],
-                    components: []
-                });
-
-                const msgCollector = message.channel.createMessageCollector({
-                    filter: m => m.author.id === message.author.id,
-                    max: 1,
-                    time: 60000
-                });
-
-                msgCollector.on('collect', async (m1) => {
-
-                    const content = m1.content;
-
-                    // ❌ DELETE MESSAGE
-                    await m1.delete().catch(() => {});
-
-                    // ❌ DELETE PANEL
-                    await panelMsg.delete().catch(() => {});
-
-                    const prompt = await message.channel.send("📍 أرسل ID القناة أو منشن القناة:");
-
-                    const channelCollector = message.channel.createMessageCollector({
-                        filter: m => m.author.id === message.author.id,
-                        max: 1,
-                        time: 60000
-                    });
-
-                    channelCollector.on('collect', async (m2) => {
-
-                        const channelId = m2.content.replace(/[<#>]/g, '');
-                        const channel = await client.channels.fetch(channelId).catch(() => null);
-
-                        // ❌ DELETE INPUT
-                        await m2.delete().catch(() => {});
-
-                        // ❌ DELETE PROMPT
-                        await prompt.delete().catch(() => {});
-
-                        if (!channel) {
-                            return message.channel.send("❌ قناة غير صالحة");
-                        }
-
-                        await channel.send(content);
-
-                        const done = await message.channel.send("✅ تم الإرسال بنجاح");
-                        setTimeout(() => done.delete().catch(() => {}), 3000);
-                    });
-                });
-            }
-        });
-    }
 });
 
-
-// 🚀 READY
-client.once('ready', () => {
-
-    client.user.setPresence({
-        status: 'idle',
-        activities: [
-            {
-                name: 'WG_System',
-                type: ActivityType.Watching
-            }
-        ]
-    });
-
-    console.log(`Logged in as ${client.user.tag}`);
-});
-
-
-// 🔑 LOGIN
+// =======================
+// LOGIN
+// =======================
 client.login(process.env.TOKEN);
