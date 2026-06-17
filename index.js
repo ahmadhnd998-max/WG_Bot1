@@ -13,7 +13,7 @@ app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
 
-const { Client, GatewayIntentBits, PermissionsBitField } = require('discord.js');
+const { Client, GatewayIntentBits, PermissionsBitField, ActivityType } = require('discord.js');
 
 const client = new Client({
     intents: [
@@ -105,7 +105,19 @@ client.on('messageCreate', async message => {
 
 
 // 🚀 BOT START
+const { ActivityType } = require('discord.js');
+
 client.once('ready', () => {
+    client.user.setPresence({
+        status: 'idle', // idle, online, dnd, invisible
+        activities: [
+            {
+                name: 'WG_System',
+                type: ActivityType.Watching
+            }
+        ]
+    });
+
     console.log(`Logged in as ${client.user.tag}`);
 });
 
