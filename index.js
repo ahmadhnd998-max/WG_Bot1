@@ -42,13 +42,13 @@ async function sleepOn() {
     );
 
     await channel.send(
-await channel.send(
-`🌒 \u200Fتم بدء الوضع الليلي
+`\u200F🌒 تم بدء الوضع الليلي
 
 ❌ من هذا الوقت حتى الساعة 10 لن يكون أي عضو قادرًا على إرسال الوسائط (صور، فيديو، ملفات...) و الروابط في المجموعة وسيتم حذف المشاركات تلقائيًا من قبل البوت
 
 ⚠️ الوقت بنظام 24 ساعة وليس 12 ساعة`
-);
+    );
+}
 
 // =======================
 // SLEEP OFF
@@ -66,7 +66,7 @@ async function sleepOff() {
     );
 
     await channel.send(
-`🌒 \u200Fتم انتهاء الوضع الليلي
+`\u200F☀️ تم انتهاء وقت الوضع الليلي
 
 ✅ من الآن فصاعدًا يستطيع الأعضاء إرسال الوسائط (صور، فيديو، ملفات...) و الروابط في المجموعة من جديد`
     );
@@ -76,16 +76,16 @@ async function sleepOff() {
 // TEST SCHEDULE (AMMAN TIME)
 // =======================
 
-// ON (20:50 Amman time)
-cron.schedule('58 20 * * *', async () => {
+// ON
+cron.schedule('00 20 * * *', async () => {
     console.log('TEST ON');
     await sleepOn();
 }, {
     timezone: 'Asia/Amman'
 });
 
-// OFF (20:52 Amman time)
-cron.schedule('00 21 * * *', async () => {
+// OFF
+cron.schedule('01 20 * * *', async () => {
     console.log('TEST OFF');
     await sleepOff();
 }, {
@@ -109,7 +109,7 @@ client.once('ready', () => {
         ]
     });
 
-    console.log('Bot is running with schedule (Asia/Amman)');
+    console.log('Bot is running');
 });
 
 // =======================
