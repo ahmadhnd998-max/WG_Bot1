@@ -1,224 +1,124 @@
-require('dotenv').config();
+if (cmd === '-send') {
 
-const express = require('express');
-const app = express();
+    const panel = new EmbedBuilder()
+        .setTitle("🧠 لوحة التحكم بالإرسال")
+        .setDescription("اختر العملية التي تريد تنفيذها 👇")
+        .setColor(0x00AEFF)
+        .setThumbnail(client.user.displayAvatarURL())
+        .addFields(
+            { name: "📤 إرسال رسالة", value: "ابدأ عملية إرسال رسالة إلى أي قناة", inline: false },
+            { name: "⚠️ ملاحظة", value: "هذه اللوحة مخصصة للمشرفين فقط", inline: false }
+        )
+        .setFooter({ text: "WG_System Control Panel" });
 
-const PORT = process.env.PORT || 3000;
+    const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId('send_msg')
+            .setLabel('بدء الإرسال')
+            .setEmoji('📤')
+            .setStyle(ButtonStyle.Success),
 
-app.get('/', (req, res) => {
-    res.send('Bot is running');
-});
+        new ButtonBuilder()
+            .setCustomId('cancel_msg')
+            .setLabel('إغلاق اللوحة')
+            .setEmoji('❌')
+            .setStyle(ButtonStyle.Danger)
+    );
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+    const panelMsg = await message.channel.send({
+        embeds: [panel],
+        components: [row]
+    });
 
-const {
-    Client,
-    GatewayIntentBits,
-    PermissionsBitField,
-    ActivityType,
-    ActionRowBuilder,
-    ButtonBuilder,
-    ButtonStyle,
-    EmbedBuilder
-} = require('discord.js');
+    const collector = panelMsg.createMessageComponentCollector({
+        filter: i => isAdmin(i.user.id),
+        time: 60000
+    });
 
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
-    ]
-});
+    collector.on('collect', async i => {
 
+        // ❌ CANCEL
+        if (i.customId === 'cancel_msg') {
+            return i.update({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle("❌ تم إغلاق اللوحة")
+                        .setColor(0xFF0000)
+                ],
+                components: []
+            });
+        }
 
-// 📌 CHANNELS YOU WANT TO CONTROL
-const CHANNELS = [
-    '1513464359999897721',
-    '1354726620354838568',
-    '1354726922470559765',
-    '1354727010567589978',
-    '1354727740515024927',
-    '1354727842667167867'
-];
+        // 📤 SEND FLOW START
+        if (i.customId === 'send_msg') {
 
+            await i.update({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle("✍️ الخطوة 1")
+                        .setDescription("اكتب الرسالة الآن في الشات 👇")
+                        .setColor(0xF1C40F)
+                ],
+                components: []
+            });
 
-// 👑 ADMIN IDS
-const ADMIN_IDS = [
-    "1516018598383190109",
-    "562600119447453706"
-];
+            const msgCollector = message.channel.createMessageCollector({
+                filter: m => m.author.id === message.author.id,
+                max: 1,
+                time: 60000
+            });
 
-function isAdmin(userId) {
-    return ADMIN_IDS.includes(userId);
-}
+            msgCollector.on('collect', async m1 => {
 
+                const content = m1.content;
+                await m1.delete().catch(() => {});
 
-// 🌙 SLEEP MODE ON
-async function sleepOn() {
-    for (const id of CHANNELS) {
-        const channel = await client.channels.fetch(id);
-        if (!channel) continue;
-
-        await channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
-            AttachFiles: false
-        });
-
-        console.log(`🔒 Sleep ON in ${channel.name}`);
-    }
-}
-
-
-// ☀️ SLEEP MODE OFF
-async function sleepOff() {
-    for (const id of CHANNELS) {
-        const channel = await client.channels.fetch(id);
-        if (!channel) continue;
-
-        await channel.permissionOverwrites.edit(channel.guild.roles.everyone, {
-            AttachFiles: true
-        });
-
-        console.log(`🔓 Sleep OFF in ${channel.name}`);
-    }
-}
-
-
-// 💬 MESSAGE COMMANDS
-client.on('messageCreate', async message => {
-
-    if (message.author.bot) return;
-    if (!isAdmin(message.author.id)) return;
-
-    const cmd = message.content.toLowerCase();
-
-    // 🌙 SLEEP MODE ON
-    if (cmd === '!sleep mode on') {
-        await sleepOn();
-        return message.reply("🌙 تم تشغيل الوضع الليلي لا يمكنك ارسال ملفات , صور , فيدوهات");
-    }
-
-    // ☀️ SLEEP MODE OFF
-    if (cmd === '!sleep mode off') {
-        await sleepOff();
-        return message.reply("☀️ تم ايقاف الوضع الليلي و يمكنك ارسال ملفات , صور , فيدوهات");
-    }
-
-    // 📤 SEND PANEL
-    if (cmd === '-send') {
-
-        const embed = new EmbedBuilder()
-            .setTitle("📤 لوحة إرسال الرسائل")
-            .setDescription("اضغط على الزر لبدء الإرسال")
-            .setColor(0x2b2d31);
-
-        const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setCustomId('send_msg')
-                .setLabel('إرسال رسالة')
-                .setStyle(ButtonStyle.Primary),
-
-            new ButtonBuilder()
-                .setCustomId('cancel_msg')
-                .setLabel('إلغاء')
-                .setStyle(ButtonStyle.Danger)
-        );
-
-        const panelMsg = await message.channel.send({
-            embeds: [embed],
-            components: [row]
-        });
-
-        const filter = i => isAdmin(i.user.id);
-
-        const collector = panelMsg.createMessageComponentCollector({
-            filter,
-            time: 60000
-        });
-
-        collector.on('collect', async i => {
-
-            // ❌ CANCEL
-            if (i.customId === 'cancel_msg') {
-                await i.update({
-                    content: "❌ تم الإلغاء",
-                    embeds: [],
-                    components: []
-                });
-                return;
-            }
-
-            // 📤 SEND FLOW
-            if (i.customId === 'send_msg') {
-
-                await i.update({
-                    content: "✍️ اكتب الرسالة التي تريد إرسالها:",
-                    embeds: [],
-                    components: []
+                await message.channel.send({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setTitle("📍 الخطوة 2")
+                            .setDescription("الآن اذكر القناة أو أرسل ID الخاص بها")
+                            .setColor(0x9B59B6)
+                    ]
                 });
 
-                const msgFilter = m => m.author.id === message.author.id;
-
-                const msgCollector = message.channel.createMessageCollector({
-                    filter: msgFilter,
+                const channelCollector = message.channel.createMessageCollector({
+                    filter: m => m.author.id === message.author.id,
                     max: 1,
                     time: 60000
                 });
 
-                msgCollector.on('collect', async m1 => {
+                channelCollector.on('collect', async m2 => {
 
-                    const content = m1.content;
-                    await m1.delete().catch(() => {});
+                    const channelId = m2.content.replace(/[<#>]/g, '');
+                    const channel = await client.channels.fetch(channelId).catch(() => null);
 
-                    await message.channel.send("📍 قم بذكر القناة أو أرسل ID الخاص بها:");
+                    await m2.delete().catch(() => {});
+                    await panelMsg.delete().catch(() => {});
 
-                    const channelCollector = message.channel.createMessageCollector({
-                        filter: msgFilter,
-                        max: 1,
-                        time: 60000
-                    });
+                    if (!channel) {
+                        return message.channel.send({
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setTitle("❌ خطأ")
+                                    .setDescription("القناة غير صالحة أو غير موجودة")
+                                    .setColor(0xE74C3C)
+                            ]
+                        });
+                    }
 
-                    channelCollector.on('collect', async m2 => {
+                    await channel.send(content);
 
-                        const channelId = m2.content.replace(/[<#>]/g, '');
-                        const channel = await client.channels.fetch(channelId).catch(() => null);
-
-                        await m2.delete().catch(() => {});
-                        await panelMsg.delete().catch(() => {});
-
-                        if (!channel) {
-                            return message.channel.send("❌ قناة غير صالحة");
-                        }
-
-                        await channel.send(content);
-
-                        const done = await message.channel.send("✅ تم إرسال الرسالة بنجاح");
-                        setTimeout(() => done.delete().catch(() => {}), 3000);
+                    message.channel.send({
+                        embeds: [
+                            new EmbedBuilder()
+                                .setTitle("✅ تم الإرسال بنجاح")
+                                .setDescription(`تم إرسال الرسالة إلى ${channel}`)
+                                .setColor(0x2ECC71)
+                        ]
                     });
                 });
-            }
-        });
-    }
-});
-
-
-// 🚀 BOT READY
-client.once('ready', () => {
-
-    client.user.setPresence({
-        status: 'idle',
-        activities: [
-            {
-                name: 'WG_System',
-                type: ActivityType.Watching
-            }
-        ]
+            });
+        }
     });
-
-    console.log(`Logged in as ${client.user.tag}`);
-});
-
-
-// 🔑 LOGIN
-client.login(process.env.TOKEN);
+}
