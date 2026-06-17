@@ -81,7 +81,7 @@ async function sleepOff() {
 }
 
 
-// 💬 MESSAGE EVENT (IMPORTANT: MUST BE async)
+// 💬 MESSAGE SYSTEM
 client.on('messageCreate', async message => {
 
     if (message.author.bot) return;
@@ -160,6 +160,8 @@ client.on('messageCreate', async message => {
                 msgCollector.on('collect', async (m1) => {
 
                     const content = m1.content;
+
+                    // ✅ DELETE USER MESSAGE
                     await m1.delete().catch(() => {});
 
                     await message.channel.send("📍 أرسل ID القناة أو منشن القناة:");
@@ -175,7 +177,9 @@ client.on('messageCreate', async message => {
                         const channelId = m2.content.replace(/[<#>]/g, '');
                         const channel = await client.channels.fetch(channelId).catch(() => null);
 
+                        // ✅ DELETE USER MESSAGE
                         await m2.delete().catch(() => {});
+
                         await panelMsg.delete().catch(() => {});
 
                         if (!channel) {
@@ -194,7 +198,7 @@ client.on('messageCreate', async message => {
 });
 
 
-// 🚀 STATUS
+// 🚀 READY
 client.once('ready', () => {
 
     client.user.setPresence({
