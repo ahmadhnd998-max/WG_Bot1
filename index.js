@@ -16,7 +16,6 @@ app.listen(PORT, () => {
 const {
     Client,
     GatewayIntentBits,
-    PermissionsBitField,
     ActivityType,
     ActionRowBuilder,
     ButtonBuilder,
@@ -81,7 +80,7 @@ async function sleepOff() {
 }
 
 
-// 💬 MESSAGE SYSTEM
+// 💬 MAIN
 client.on('messageCreate', async message => {
 
     if (message.author.bot) return;
@@ -92,21 +91,26 @@ client.on('messageCreate', async message => {
     // 🌙 ON
     if (cmd === '!sleep mode on') {
         await sleepOn();
-        return message.reply("🌙 تم تشغيل الوضع الليلي");
+        await message.delete().catch(() => {});
+        return message.channel.send("🌙 تم تشغيل الوضع الليلي");
     }
 
     // ☀️ OFF
     if (cmd === '!sleep mode off') {
         await sleepOff();
-        return message.reply("☀️ تم إيقاف الوضع الليلي");
+        await message.delete().catch(() => {});
+        return message.channel.send("☀️ تم إيقاف الوضع الليلي");
     }
 
-    // 📤 SEND PANEL
+    // 📤 SEND COMMAND
     if (cmd === '-send') {
+
+        // ❌ DELETE COMMAND MESSAGE
+        await message.delete().catch(() => {});
 
         const panel = new EmbedBuilder()
             .setTitle("🧠 لوحة التحكم")
-            .setDescription("اضغط زر البدء للإرسال")
+            .setDescription("اضغط بدء الإرسال")
             .setColor(0x00AEFF);
 
         const row = new ActionRowBuilder().addComponents(
@@ -142,7 +146,7 @@ client.on('messageCreate', async message => {
                 });
             }
 
-            // 📤 SEND FLOW
+            // 📤 START FLOW
             if (i.customId === 'send_msg') {
 
                 await i.update({
@@ -161,10 +165,11 @@ client.on('messageCreate', async message => {
 
                     const content = m1.content;
 
-                    // ✅ DELETE USER MESSAGE
+                    // ❌ DELETE USER MESSAGE (message text)
                     await m1.delete().catch(() => {});
 
-                    await message.channel.send("📍 أرسل ID القناة أو منشن القناة:");
+                    // 📍 ASK CHANNEL
+                    const prompt = await message.channel.send("📍 أرسل ID القناة أو منشن القناة:");
 
                     const channelCollector = message.channel.createMessageCollector({
                         filter: m => m.author.id === message.author.id,
@@ -177,9 +182,13 @@ client.on('messageCreate', async message => {
                         const channelId = m2.content.replace(/[<#>]/g, '');
                         const channel = await client.channels.fetch(channelId).catch(() => null);
 
-                        // ✅ DELETE USER MESSAGE
+                        // ❌ DELETE USER ANSWER
                         await m2.delete().catch(() => {});
 
+                        // ❌ DELETE BOT PROMPT
+                        await prompt.delete().catch(() => {});
+
+                        // ❌ DELETE PANEL
                         await panelMsg.delete().catch(() => {});
 
                         if (!channel) {
@@ -188,7 +197,7 @@ client.on('messageCreate', async message => {
 
                         await channel.send(content);
 
-                        const done = await message.channel.send("✅ تم إرسال الرسالة بنجاح");
+                        const done = await message.channel.send("✅ تم الإرسال بنجاح");
                         setTimeout(() => done.delete().catch(() => {}), 3000);
                     });
                 });
