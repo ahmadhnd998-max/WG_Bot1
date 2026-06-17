@@ -20,14 +20,14 @@ const client = new Client({
 });
 
 // =======================
-// TEST CHANNEL (CHANGE THIS)
+// TEST CHANNEL
 // =======================
 const TEST_CHANNEL = '1354726452905508945';
 
 let sleepModeEnabled = false;
 
 // =======================
-// SLEEP ON (TEST 07:30)
+// SLEEP ON
 // =======================
 async function sleepOn() {
 
@@ -36,22 +36,22 @@ async function sleepOn() {
     const channel = await client.channels.fetch(TEST_CHANNEL).catch(() => null);
     if (!channel) return;
 
-    await channel.permissionOverwrites.edit(🌒
+    await channel.permissionOverwrites.edit(
         channel.guild.roles.everyone,
         { AttachFiles: false }
     );
 
     await channel.send(
-`"تم بدء الوضع الليلي" 🌒
+`تم بدء الوضع الليلي 🌒
 
-"من هذا الوقت حتى الساعة 10 لن يكون أي عضو قادرًا على إرسال الوسائط (صور، فيديو، ملفات...) و الروابط في المجموعة وسيتم حذف المشاركات تلقائيًا من قبل البوت". ❌
+من هذا الوقت حتى الساعة 10 لن يكون أي عضو قادرًا على إرسال الوسائط (صور، فيديو، ملفات...) و الروابط في المجموعة وسيتم حذف المشاركات تلقائيًا من قبل البوت ❌
 
-"الوقت بنظام 24 ساعة وليس 12 ساعة" ⚠️`
+الوقت بنظام 24 ساعة وليس 12 ساعة ⚠️`
     );
 }
 
 // =======================
-// SLEEP OFF (TEST 07:35)
+// SLEEP OFF
 // =======================
 async function sleepOff() {
 
@@ -66,14 +66,17 @@ async function sleepOff() {
     );
 
     await channel.send(
-`"تم انتهاء وقت الوضع الليلي" 🌒
+`تم انتهاء وقت الوضع الليلي 🌒
 
-"من الآن فصاعدًا يستطيع الأعضاء إرسال الوسائط (صور، فيديو، ملفات...) و الروابط في المجموعة من جديد". ✅`
+من الآن فصاعدًا يستطيع الأعضاء إرسال الوسائط (صور، فيديو، ملفات...) و الروابط في المجموعة من جديد ✅`
     );
 }
 
-// 07:30 test ON
-// TEST ON (20:40 Amman time)
+// =======================
+// TEST SCHEDULE
+// =======================
+
+// ON
 cron.schedule('50 20 * * *', async () => {
     console.log('TEST ON');
     await sleepOn();
@@ -81,7 +84,7 @@ cron.schedule('50 20 * * *', async () => {
     timezone: 'Asia/Amman'
 });
 
-// TEST OFF (20:42 Amman time)
+// OFF
 cron.schedule('52 20 * * *', async () => {
     console.log('TEST OFF');
     await sleepOff();
@@ -93,6 +96,7 @@ cron.schedule('52 20 * * *', async () => {
 // READY
 // =======================
 client.once('ready', () => {
+
     console.log(`Logged in as ${client.user.tag}`);
 
     client.user.setPresence({
