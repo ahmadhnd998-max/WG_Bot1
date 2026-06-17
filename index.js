@@ -85,18 +85,15 @@ client.on('messageCreate', async message => {
 
     if (message.author.bot) return;
 
-    // ❌ ADMIN CHECK
     if (!isAdmin(message.author.id)) return;
 
     const cmd = message.content.toLowerCase();
 
-    // 🌙 SLEEP MODE ON
     if (cmd === '!sleep mode on') {
         await sleepOn();
         return message.reply("🌙 تم تشغيل الوضع الليلي لا يمكنك ارسال ملفات , صور , فيدوهات");
     }
 
-    // ☀️ SLEEP MODE OFF
     if (cmd === '!sleep mode off') {
         await sleepOff();
         return message.reply("☀️ تم ايقاف الوضع الليلي و يمكنك ارسال ملفات , صور , فيدوهات");
@@ -105,11 +102,10 @@ client.on('messageCreate', async message => {
 
 
 // 🚀 BOT START
-const { ActivityType } = require('discord.js');
-
 client.once('ready', () => {
+
     client.user.setPresence({
-        status: 'idle', // idle, online, dnd, invisible
+        status: 'idle',
         activities: [
             {
                 name: 'WG_System',
