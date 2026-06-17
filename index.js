@@ -92,14 +92,14 @@ client.on('messageCreate', async message => {
     if (cmd === '!sleep mode on') {
         await sleepOn();
         await message.delete().catch(() => {});
-        return message.channel.send("🌙 تم تشغيل الوضع الليلي");
+        return message.channel.send("🌙 تم تشغيل الوضع الليلي لا يمكنك الان ارسال ملفات , فيدوهات , صور");
     }
 
     // ☀️ OFF
     if (cmd === '!sleep mode off') {
         await sleepOff();
         await message.delete().catch(() => {});
-        return message.channel.send("☀️ تم إيقاف الوضع الليلي");
+        return message.channel.send("☀️ تم إيقاف الوضع الليلي يمكنك الان ارسال ملفات , فيدوهات , صور");
     }
 
     // 📤 SEND SYSTEM
