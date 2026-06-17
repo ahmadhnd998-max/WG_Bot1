@@ -42,13 +42,13 @@ async function sleepOn() {
     );
 
     await channel.send(
-`\u200Fتم بدء الوضع الليلي 🌒
+await channel.send(
+`🌒 \u200Fتم بدء الوضع الليلي
 
 ❌ من هذا الوقت حتى الساعة 10 لن يكون أي عضو قادرًا على إرسال الوسائط (صور، فيديو، ملفات...) و الروابط في المجموعة وسيتم حذف المشاركات تلقائيًا من قبل البوت
 
 ⚠️ الوقت بنظام 24 ساعة وليس 12 ساعة`
-    );
-}
+);
 
 // =======================
 // SLEEP OFF
@@ -66,7 +66,7 @@ async function sleepOff() {
     );
 
     await channel.send(
-`\u200Fتم انتهاء وقت الوضع الليلي 🌒
+`🌒 \u200Fتم انتهاء الوضع الليلي
 
 ✅ من الآن فصاعدًا يستطيع الأعضاء إرسال الوسائط (صور، فيديو، ملفات...) و الروابط في المجموعة من جديد`
     );
@@ -77,7 +77,7 @@ async function sleepOff() {
 // =======================
 
 // ON (20:50 Amman time)
-cron.schedule('55 20 * * *', async () => {
+cron.schedule('58 20 * * *', async () => {
     console.log('TEST ON');
     await sleepOn();
 }, {
@@ -85,7 +85,7 @@ cron.schedule('55 20 * * *', async () => {
 });
 
 // OFF (20:52 Amman time)
-cron.schedule('56 20 * * *', async () => {
+cron.schedule('00 21 * * *', async () => {
     console.log('TEST OFF');
     await sleepOff();
 }, {
