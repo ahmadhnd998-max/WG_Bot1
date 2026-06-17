@@ -66,7 +66,7 @@ async function sleepOff() {
     );
 
     await channel.send(
-`\u200F☀️ تم انتهاء وقت الوضع الليلي
+`\u200F🌒 تم انتهاء وقت الوضع الليلي
 
 ✅ من الآن فصاعدًا يستطيع الأعضاء إرسال الوسائط (صور، فيديو، ملفات...) و الروابط في المجموعة من جديد`
     );
@@ -77,19 +77,19 @@ async function sleepOff() {
 // =======================
 
 // ON
-cron.schedule('05 21 * * *', async () => {
+cron.schedule('00 21 * * *', async () => {
     console.log('TEST ON');
     await sleepOn();
 }, {
-    timezone: 'Asia/Amman'
+    timezone: 'Europe/Amsterdam'
 });
 
 // OFF
-cron.schedule('07 21 * * *', async () => {
+cron.schedule('00 9 * * *', async () => {
     console.log('TEST OFF');
     await sleepOff();
 }, {
-    timezone: 'Asia/Amman'
+    timezone: 'Europe/Amsterdam'
 });
 
 // =======================
