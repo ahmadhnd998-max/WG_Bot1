@@ -4,8 +4,15 @@ const express = require('express');
 const cron = require('node-cron');
 const { Client, GatewayIntentBits, ActivityType } = require('discord.js');
 
+// =======================
+// EXPRESS
+// =======================
 const app = express();
-app.get('/', (req, res) => res.send('Bot is running'));
+
+app.get('/', (req, res) => {
+    res.send('Bot is running');
+});
+
 app.listen(process.env.PORT || 3000);
 
 // =======================
@@ -20,9 +27,9 @@ const client = new Client({
 });
 
 // =======================
-// TEST CHANNEL
+// CHANNEL
 // =======================
-const CHANNELS = [ '1513464359999897721', '1354726620354838568', '1354726922470559765', '1354727010567589978', '1354727740515024927', '1354727842667167867' ];
+const TEST_CHANNEL = '1354726452905508945';
 
 let sleepModeEnabled = false;
 
@@ -34,20 +41,28 @@ async function sleepOn() {
     sleepModeEnabled = true;
 
     const channel = await client.channels.fetch(TEST_CHANNEL).catch(() => null);
-    if (!channel) return;
+
+    if (!channel) {
+        console.error('Channel not found');
+        return;
+    }
 
     await channel.permissionOverwrites.edit(
         channel.guild.roles.everyone,
-        { AttachFiles: false }
+        {
+            AttachFiles: false
+        }
     );
 
     await channel.send(
 `\u200F🌒 تم بدء الوضع الليلي
 
-❌ من هذا الوقت حتى الساعة 10 لن يكون أي عضو قادرًا على إرسال الوسائط (صور، فيديو، ملفات...) و الروابط في المجموعة وسيتم حذف المشاركات تلقائيًا من قبل البوت
+❌ من هذا الوقت حتى الساعة 10 لن يكون أي عضو قادرًا على إرسال الوسائط (صور، فيديو، ملفات...) والروابط في المجموعة وسيتم حذف المشاركات تلقائيًا من قبل البوت
 
 ⚠️ الوقت بنظام 24 ساعة وليس 12 ساعة`
     );
+
+    console.log('Sleep mode enabled');
 }
 
 // =======================
@@ -58,44 +73,60 @@ async function sleepOff() {
     sleepModeEnabled = false;
 
     const channel = await client.channels.fetch(TEST_CHANNEL).catch(() => null);
-    if (!channel) return;
+
+    if (!channel) {
+        console.error('Channel not found');
+        return;
+    }
 
     await channel.permissionOverwrites.edit(
         channel.guild.roles.everyone,
-        { AttachFiles: true }
+        {
+            AttachFiles: true
+        }
     );
 
     await channel.send(
 `\u200F🌒 تم انتهاء وقت الوضع الليلي
 
-✅ من الآن فصاعدًا يستطيع الأعضاء إرسال الوسائط (صور، فيديو، ملفات...) و الروابط في المجموعة من جديد`
+✅ من الآن فصاعدًا يستطيع الأعضاء إرسال الوسائط (صور، فيديو، ملفات...) والروابط في المجموعة من جديد`
     );
+
+    console.log('Sleep mode disabled');
 }
 
 // =======================
-// TEST SCHEDULE (AMMAN TIME)
+// SCHEDULE (NETHERLANDS TIME)
 // =======================
 
-// ON
-cron.schedule('00 21 * * *', async () => {
-    console.log('TEST ON');
-    await sleepOn();
-}, {
-    timezone: 'Europe/Amsterdam'
-});
+// ON AT 21:00
+cron.schedule(
+    '0 21 * * *',
+    async () => {
+        console.log('🌒 تم بدء الوضع الليلي');
+        await sleepOn();
+    },
+    {
+        timezone: 'Europe/Amsterdam'
+    }
+);
 
-// OFF
-cron.schedule('00 9 * * *', async () => {
-    console.log('TEST OFF');
-    await sleepOff();
-}, {
-    timezone: 'Europe/Amsterdam'
-});
+// OFF AT 09:00
+cron.schedule(
+    '0 9 * * *',
+    async () => {
+        console.log('🌒 تم انتهاء وقت الوضع الليلي');
+        await sleepOff();
+    },
+    {
+        timezone: 'Europe/Amsterdam'
+    }
+);
 
 // =======================
 // READY
 // =======================
-client.once('ready', () => {
+client.once('clientReady', () => {
 
     console.log(`Logged in as ${client.user.tag}`);
 
