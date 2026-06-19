@@ -101,7 +101,7 @@ async function sleepOff() {
 
 // ON AT 21:00
 cron.schedule(
-    '0 21 * * *',
+    '0 22 * * *',
     async () => {
         console.log('🌒 تم بدء الوضع الليلي');
         await sleepOn();
@@ -113,7 +113,7 @@ cron.schedule(
 
 // OFF AT 09:00
 cron.schedule(
-    '0 9 * * *',
+    '0 10 * * *',
     async () => {
         console.log('🌒 تم انتهاء وقت الوضع الليلي');
         await sleepOff();
